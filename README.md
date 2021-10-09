@@ -19,6 +19,8 @@ render result:
         #----- /home/lwch/src/yaml/test/next.yaml -----
       #----- /home/lwch/src/yaml/test/include.d/include.yaml -----
 
+the relative path will convert to absolute path by current file path
+
 ## decode
 
     var ret struct {
