@@ -101,7 +101,7 @@ func render(f *os.File, dir, prefix string, level int) (string, error) {
 func spaceCount(line string) int {
 	for i, ch := range line {
 		if ch != ' ' {
-			return i + 1
+			return i
 		}
 	}
 	return len(line)
@@ -121,11 +121,15 @@ func replace(self, dir, include, prefix string, level int) (string, error) {
 		}
 	}
 	var buf bytes.Buffer
+	_, err := fmt.Fprintln(&buf, prefix+"#include "+include)
+	if err != nil {
+		return "", err
+	}
 	for _, file := range files {
 		if file == self {
 			continue
 		}
-		_, err := fmt.Fprintln(&buf, prefix+"#include "+include)
+		_, err = fmt.Fprintln(&buf, prefix+"#file: "+file)
 		if err != nil {
 			return "", err
 		}
