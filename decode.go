@@ -29,7 +29,7 @@ func Decode(dir string, out interface{}) error {
 		return err
 	}
 	defer f.Close()
-	str, err := render(f, filepath.Dir(dir), "", 0)
+	str, err := render(f, "", 0)
 	if err != nil {
 		return err
 	}
@@ -48,14 +48,14 @@ func Render(dir string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
-	str, err := render(f, filepath.Dir(dir), "", 0)
+	str, err := render(f, "", 0)
 	if err != nil {
 		return "", err
 	}
 	return str, nil
 }
 
-func render(f *os.File, dir, prefix string, level int) (string, error) {
+func render(f *os.File, prefix string, level int) (string, error) {
 	if level > 10 {
 		return "", ErrNested
 	}
@@ -64,7 +64,7 @@ func render(f *os.File, dir, prefix string, level int) (string, error) {
 	handle := func(line string) error {
 		trim := strings.TrimSpace(line)
 		if strings.HasPrefix(trim, "#include") {
-			str, err := replace(f.Name(), dir,
+			str, err := replace(f.Name(),
 				strings.TrimSpace(strings.TrimPrefix(trim, "#include")),
 				prefix+strings.Repeat(" ", spaceCount(line)), level)
 			if err != nil {
@@ -87,6 +87,9 @@ func render(f *os.File, dir, prefix string, level int) (string, error) {
 				if err != nil {
 					return "", err
 				}
+				if !strings.HasSuffix(line, "\n") {
+					buf.WriteRune('\n')
+				}
 				return buf.String(), nil
 			}
 			return "", err
@@ -107,9 +110,9 @@ func spaceCount(line string) int {
 	return len(line)
 }
 
-func replace(self, dir, include, prefix string, level int) (string, error) {
+func replace(self, include, prefix string, level int) (string, error) {
 	if !path.IsAbs(include) {
-		include = path.Join(dir, include)
+		include = path.Join(path.Dir(self), include)
 	}
 	var files []string
 	if _, err := os.Stat(include); !os.IsNotExist(err) {
@@ -129,7 +132,7 @@ func replace(self, dir, include, prefix string, level int) (string, error) {
 		if file == self {
 			continue
 		}
-		_, err = fmt.Fprintln(&buf, prefix+"#file: "+file)
+		_, err = fmt.Fprintln(&buf, prefix+"#+++++ "+file+" +++++")
 		if err != nil {
 			return "", err
 		}
@@ -138,11 +141,15 @@ func replace(self, dir, include, prefix string, level int) (string, error) {
 			return "", err
 		}
 		defer f.Close()
-		str, err := render(f, path.Dir(file), prefix, level)
+		str, err := render(f, prefix, level)
 		if err != nil {
 			return "", err
 		}
 		_, err = fmt.Fprint(&buf, str)
+		if err != nil {
+			return "", err
+		}
+		_, err = fmt.Fprintln(&buf, prefix+"#----- "+file+" -----")
 		if err != nil {
 			return "", err
 		}

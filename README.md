@@ -11,11 +11,13 @@ render result:
 
     includes:
       #include /home/lwch/src/yaml/test/include.d/*.yaml
-      #file: /home/lwch/src/yaml/test/include.d/include.yaml
+      #+++++ /home/lwch/src/yaml/test/include.d/include.yaml +++++
       next:
         #include /home/lwch/src/yaml/test/next.yaml
-        #file: /home/lwch/src/yaml/test/next.yaml
+        #+++++ /home/lwch/src/yaml/test/next.yaml +++++
         title: next
+        #----- /home/lwch/src/yaml/test/next.yaml -----
+      #----- /home/lwch/src/yaml/test/include.d/include.yaml -----
 
 ## decode
 
