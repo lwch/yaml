@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -111,11 +110,11 @@ func spaceCount(line string) int {
 }
 
 func replace(self, include, prefix string, level int) (string, error) {
-	if !path.IsAbs(include) {
-		include = path.Join(path.Dir(self), include)
+	if !filepath.IsAbs(include) {
+		include = filepath.Join(filepath.Dir(self), include)
 	}
 	var files []string
-	if _, err := os.Stat(include); !os.IsNotExist(err) {
+	if _, err := os.Stat(include); err == nil {
 		files = []string{include}
 	} else {
 		files, err = filepath.Glob(include)
